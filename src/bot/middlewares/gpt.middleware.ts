@@ -65,7 +65,7 @@ export const gpt: MiddlewareFn = async (ctx, next) => {
 
     // random reply
     if (
-      Math.random() < 0.009 &&
+      Math.random() < 0.001 &&
       !StringUtils.text_includes(text, ['/imagine', '/variation', '/'])
     ) {
       const input = GptUtils.build_input({ text, username, reply_to_username, reply_to_text })
