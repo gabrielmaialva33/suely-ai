@@ -30,10 +30,11 @@ export class UserBot {
     HistoryUtils.reset_history()
 
     const group = env.GROUP_ID.split(',').map((id: string) => id.trim())
+
     const chatMessages = await this.user.getMessages(group[0], {
       filter: new Api.InputMessagesFilterEmpty(),
       reverse: false,
-      limit: 1,
+      limit: 50,
     })
     const messages = chatMessages.reverse()
     let context = ''
