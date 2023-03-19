@@ -61,7 +61,7 @@ class OpenAI extends OpenAIApi {
         stop: ['||'],
       },
       {
-        timeout: 5000,
+        timeout: 20000,
       }
     )
   }
