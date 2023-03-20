@@ -22,11 +22,11 @@ class OpenAI extends OpenAIApi {
 
   private RandonCompletionRequest = {
     model: 'text-davinci-003',
-    temperature: Math.random() * (0.7 - 0.3) + 0.3,
-    max_tokens: 400,
-    frequency_penalty: Math.random() * (1.5 - 0.2) + 0.2,
-    presence_penalty: Math.random() * (0.2 - 0.1) + 0.1,
-    n: Math.floor(Math.random() * (5 - 1) + 1),
+    temperature: 0.6,
+    max_tokens: 100,
+    frequency_penalty: Math.random() * (1.0 - 0.1) + 0.1,
+    presence_penalty: Math.random() * (0.5 - 0.1) + 0.1,
+    n: Math.floor(Math.random() * (10 - 1) + 1),
   } as CreateCompletionRequest
 
   public async complete(text: string, username: string) {
@@ -47,11 +47,14 @@ class OpenAI extends OpenAIApi {
       await HistoryUtils.populate_history()
 
       // text-curie-001 text-davinci-003
-      return this.createCompletion({
-        prompt,
-        ...this.RandonCompletionRequest,
-        stop: ['||'],
-      })
+      return this.createCompletion(
+        {
+          prompt,
+          ...this.RandonCompletionRequest,
+          stop: ['||'],
+        },
+        { timeout: 20000 }
+      )
     }
 
     return this.createCompletion(
@@ -60,9 +63,7 @@ class OpenAI extends OpenAIApi {
         ...this.RandonCompletionRequest,
         stop: ['||'],
       },
-      {
-        timeout: 20000,
-      }
+      { timeout: 20000 }
     )
   }
 
