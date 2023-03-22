@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  suely:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: suely
+    restart: 'no'
+    ports:
+      - '80:80'
+    environment:
+      API_ID: ${API_ID}
+      API_HASH: ${API_HASH}
+      BOT_TOKEN: ${BOT_TOKEN}
+      GROUP_ID: ${GROUP_ID}
+      STRING_SESSION: ${STRING_SESSION}
+      OPENAI_TOKEN: ${OPENAI_TOKEN}
