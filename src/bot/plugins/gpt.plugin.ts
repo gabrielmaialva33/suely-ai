@@ -31,8 +31,30 @@ class OpenAI extends OpenAIApi {
   } as CreateCompletionRequest
 
   public async complete(text: string, username: string) {
-    const main = fs.readFileSync(process.cwd() + '/tmp/main.gpt.txt', 'utf8')
+    const temp_main = fs.readFileSync(process.cwd() + '/tmp/main.gpt.txt', 'utf8')
     const history = fs.readFileSync(process.cwd() + '/tmp/history.gpt.txt', 'utf8')
+
+    Logger.debug(
+      'Date:',
+      DateTime.local({
+        zone: 'America/Sao_Paulo',
+      }).toLocaleString(DateTime.DATE_FULL)
+    )
+    Logger.debug(
+      'Time:',
+      DateTime.local({
+        zone: 'America/Sao_Paulo',
+      }).toLocaleString(DateTime.TIME_SIMPLE)
+    )
+    const main = temp_main
+      .replace(
+        '$date',
+        DateTime.local({ zone: 'America/Sao_Paulo' }).toLocaleString(DateTime.DATE_FULL)
+      )
+      .replace(
+        '$time',
+        DateTime.local({ zone: 'America/Sao_Paulo' }).toLocaleString(DateTime.TIME_SIMPLE)
+      )
 
     Logger.info(
       `CONTEXT: ${JSON.stringify(StringUtils.info_text(main + history + text))}`,
