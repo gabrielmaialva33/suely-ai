@@ -1,15 +1,15 @@
 import * as fs from 'fs'
 
 import jimp from 'jimp'
-import env from '@/env'
+import Env from '@/config/env'
 
 import {
-  Configuration,
-  OpenAIApi,
   ChatCompletionRequestMessage,
   ChatCompletionRequestMessageRoleEnum,
+  Configuration,
+  OpenAIApi,
 } from 'openai'
-import { Logger } from '@/logger'
+import { Logger } from '@/helpers/logger.utils'
 import { DateTime } from 'luxon'
 
 import { StringUtils } from '@/helpers/string.utils'
@@ -18,34 +18,25 @@ import { CreateCompletionRequest } from 'openai/api'
 
 class OpenAI extends OpenAIApi {
   constructor() {
-    super(new Configuration({ apiKey: env.OPENAI_TOKEN }))
+    super(new Configuration({ apiKey: Env.OPENAI_TOKEN }))
   }
 
   private RandonCompletionRequest = {
     model: 'text-davinci-003',
-    temperature: Math.random() * (1 - 0.5) + 0.5,
-    max_tokens: 100,
-    frequency_penalty: Math.random() * (1 - 0.5) + 0.5,
-    presence_penalty: Math.random() * (0.5 - 0.1) + 0.1,
-    n: Math.floor(Math.random() * (3 - 1) + 1),
+    temperature: 0.5,
+    max_tokens: 500,
+    frequency_penalty: 1.5,
+    presence_penalty: 0,
+    //top_p: 0.3,
+    n: Math.floor(Math.random() * 3) + 1,
+    //n: 1,
+    stop: ['||'],
   } as CreateCompletionRequest
 
   public async complete(text: string, username: string) {
     const temp_main = fs.readFileSync(process.cwd() + '/tmp/main.gpt.txt', 'utf8')
     const history = fs.readFileSync(process.cwd() + '/tmp/history.gpt.txt', 'utf8')
 
-    Logger.debug(
-      'Date:',
-      DateTime.local({
-        zone: 'America/Sao_Paulo',
-      }).toLocaleString(DateTime.DATE_FULL)
-    )
-    Logger.debug(
-      'Time:',
-      DateTime.local({
-        zone: 'America/Sao_Paulo',
-      }).toLocaleString(DateTime.TIME_SIMPLE)
-    )
     const main = temp_main
       .replace(
         '$date',
@@ -57,15 +48,15 @@ class OpenAI extends OpenAIApi {
       )
 
     Logger.info(
-      `CONTEXT: ${JSON.stringify(StringUtils.info_text(main + history + text))}`,
-      'IA/COMPLETE'
+      `context: ${JSON.stringify(StringUtils.InfoText(main + history + text))}`,
+      'ai.complete'
     )
-    Logger.info(`CONFIG: ${JSON.stringify(this.RandonCompletionRequest)}`, 'IA/COMPLETE')
+    Logger.info(`CONFIG: ${JSON.stringify(this.RandonCompletionRequest)}`, 'ai.complete')
 
-    const prompt = StringUtils.remove_breaklines(main + history + text + `Suely(${username}):||`)
+    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Suely(${username}):||`)
 
-    if (StringUtils.count_tokens(prompt) > 4000) {
-      Logger.error('Tokens limit exceeded!', 'IA/COMPLETE')
+    if (StringUtils.CountTokens(prompt) > 4096) {
+      Logger.error('tokens limit exceeded!', 'ai.complete')
 
       await HistoryUtils.populate_history()
 
@@ -91,37 +82,15 @@ class OpenAI extends OpenAIApi {
   }
 
   public async opinion(text: string) {
-    const temp_main = fs.readFileSync(process.cwd() + '/tmp/main.gpt.txt', 'utf8')
+    const main = fs.readFileSync(process.cwd() + '/tmp/main.gpt.txt', 'utf8')
     const history = fs.readFileSync(process.cwd() + '/tmp/history.gpt.txt', 'utf8')
-    // replace date and time in main text file, use PT-BR locale
-    Logger.debug(
-      'Date:',
-      DateTime.local({
-        zone: 'America/Sao_Paulo',
-      }).toLocaleString(DateTime.DATE_FULL)
-    )
-    Logger.debug(
-      'Time:',
-      DateTime.local({
-        zone: 'America/Sao_Paulo',
-      }).toLocaleString(DateTime.TIME_SIMPLE)
-    )
-    const main = temp_main
-      .replace(
-        '$date',
-        DateTime.local({ zone: 'America/Sao_Paulo' }).toLocaleString(DateTime.DATE_FULL)
-      )
-      .replace(
-        '$time',
-        DateTime.local({ zone: 'America/Sao_Paulo' }).toLocaleString(DateTime.TIME_SIMPLE)
-      )
 
-    Logger.info(`CONTEXT: ${JSON.stringify(StringUtils.info_text(main + history))}`, 'IA/COMPLETE')
+    Logger.info(`CONTEXT: ${JSON.stringify(StringUtils.InfoText(main + history))}`, 'IA/COMPLETE')
     Logger.info(`CONFIG: ${JSON.stringify(this.RandonCompletionRequest)}`, 'IA/COMPLETE')
 
-    const prompt = StringUtils.remove_breaklines(main + history + text + `Suely:||`)
+    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Suely:||`)
 
-    if (StringUtils.count_tokens(prompt) > 4000) {
+    if (StringUtils.CountTokens(prompt) > 4000) {
       Logger.error('Tokens limit exceeded!', 'IA/COMPLETE')
 
       await HistoryUtils.populate_history()
@@ -166,6 +135,12 @@ class OpenAI extends OpenAIApi {
   }
 
   public async chat(text: string, username: string) {
+    if (!fs.existsSync(process.cwd() + '/tmp/system.gpt.txt'))
+      fs.writeFileSync(process.cwd() + '/tmp/system.gpt.txt', '')
+
+    if (!fs.existsSync(process.cwd() + '/tmp/history.gpt.txt'))
+      fs.writeFileSync(process.cwd() + '/tmp/history.gpt.txt', '')
+
     const system = fs.readFileSync(process.cwd() + '/tmp/system.gpt.txt', 'utf8')
     const history = fs.readFileSync(process.cwd() + '/tmp/history.gpt.txt', 'utf8')
 
@@ -185,7 +160,7 @@ class OpenAI extends OpenAIApi {
 
       return {
         role:
-          user.includes('Suely') && !user.includes('(')
+          user.includes('suely') && !user.includes('(')
             ? ChatCompletionRequestMessageRoleEnum.Assistant
             : ChatCompletionRequestMessageRoleEnum.User,
         name: new_user ? new_user : user,
@@ -204,7 +179,7 @@ class OpenAI extends OpenAIApi {
 
     const messages_text = {
       role:
-        user.includes('Suely') && !user.includes('(')
+        user.includes('suely') && !user.includes('(')
           ? ChatCompletionRequestMessageRoleEnum.Assistant
           : ChatCompletionRequestMessageRoleEnum.User,
       name: new_user ? new_user : user,
@@ -226,7 +201,7 @@ class OpenAI extends OpenAIApi {
     return this.createChatCompletion({
       model: 'gpt-3.5-turbo',
       stop: ['||'],
-      max_tokens: 500,
+      max_tokens: 100,
       temperature: 0.5,
       presence_penalty: 0.2,
       frequency_penalty: 0.2,
