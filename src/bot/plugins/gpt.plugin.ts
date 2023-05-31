@@ -25,8 +25,10 @@ class OpenAI extends OpenAIApi {
     model: 'text-davinci-002',
     temperature: 1,
     max_tokens: 60,
-    frequency_penalty: 1.5,
-    presence_penalty: 1.0,
+    // randomize 1.0 2.0
+    frequency_penalty: Math.random() * (2.0 - 1.0) + 1.0,
+    // randomize 0.5 2.0
+    presence_penalty: Math.random() * (2.0 - 0.5) + 0.5,
     //top_p: 0.3,
     n: 1,
     //n: 1,
