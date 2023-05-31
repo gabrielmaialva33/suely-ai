@@ -71,7 +71,7 @@
     "@grammyjs/menu": "^1.2.0",
     "@grammyjs/parse-mode": "^1.7.1",
     "better-sqlite3": "^8.4.0",
-    "dotenv": "^16.1.0",
+    "dotenv": "^16.1.2",
     "envalid": "^7.3.1",
     "grammy": "^1.16.1",
     "jimp": "^0.22.8",
