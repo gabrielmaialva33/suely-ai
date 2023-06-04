@@ -22,7 +22,7 @@ class OpenAI extends OpenAIApi {
   }
 
   private RandonCompletionRequest = {
-    model: 'text-davinci-002',
+    model: 'text-davinci-003',
     temperature: 1,
     max_tokens: 150,
     // randomize 1.5 1.8
