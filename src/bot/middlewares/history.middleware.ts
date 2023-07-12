@@ -4,9 +4,12 @@ import { Logger } from '@/helpers/logger.utils'
 import { StringUtils } from '@/helpers/string.utils'
 import { ContextUtils } from '@/helpers/context.utils'
 import { HistoryUtils } from '@/helpers/history.utils'
+import Env from '@/config/env'
 
 export const history: MiddlewareFn = async (ctx, next) => {
   if (!ctx.chat || !ctx.message) return next()
+
+  const permitted = Env.GROUP_ID.split(',').map((id: string) => id.trim())
 
   try {
     if (
@@ -15,7 +18,8 @@ export const history: MiddlewareFn = async (ctx, next) => {
       ctx.message.from.is_bot ||
       ctx.message.reply_to_message?.from?.is_bot ||
       !ctx.message.from?.first_name ||
-      StringUtils.TextInclude(ctx.message!.text!, ['suely', '/'])
+      StringUtils.TextInclude(ctx.message!.text!, ['suely', '/']) ||
+      ctx.chat.id.toString() !== permitted[0]
     ) {
       Logger.debug('ignoring message', 'history.middleware')
       return next()
