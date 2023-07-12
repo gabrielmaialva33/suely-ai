@@ -92,7 +92,7 @@ class OpenAI extends OpenAIApi {
     )
     Logger.info(`CONFIG: ${JSON.stringify(this.GetRandomCompletionRequest())}`, 'ai.complete')
 
-    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Winx(${username}):||`)
+    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Suely(${username}):||`)
 
     if (StringUtils.CountTokens(prompt) > 4096) {
       Logger.error('tokens limit exceeded!', 'ai.complete')
@@ -127,7 +127,7 @@ class OpenAI extends OpenAIApi {
     Logger.info(`CONTEXT: ${JSON.stringify(StringUtils.InfoText(main + history))}`, 'IA/COMPLETE')
     Logger.info(`CONFIG: ${JSON.stringify(this.GetRandomCompletionRequest())}`, 'IA/COMPLETE')
 
-    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Winx:||`)
+    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Suely:||`)
 
     if (StringUtils.CountTokens(prompt) > 4000) {
       Logger.error('Tokens limit exceeded!', 'IA/COMPLETE')
@@ -199,7 +199,7 @@ class OpenAI extends OpenAIApi {
 
       return {
         role:
-          user.includes('Winx') && !user.includes('(')
+          user.includes('Suely') && !user.includes('(')
             ? ChatCompletionRequestMessageRoleEnum.Assistant
             : ChatCompletionRequestMessageRoleEnum.User,
         name: new_user ? new_user : user,
@@ -218,7 +218,7 @@ class OpenAI extends OpenAIApi {
 
     const messages_text = {
       role:
-        user.includes('Winx') && !user.includes('(')
+        user.includes('Suely') && !user.includes('(')
           ? ChatCompletionRequestMessageRoleEnum.Assistant
           : ChatCompletionRequestMessageRoleEnum.User,
       name: new_user ? new_user : user,
