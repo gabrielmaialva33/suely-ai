@@ -21,17 +21,55 @@ class OpenAI extends OpenAIApi {
     super(new Configuration({ apiKey: Env.OPENAI_TOKEN }))
   }
 
-  private RandonCompletionRequest = {
-    model: 'text-davinci-003',
-    temperature: 1,
-    max_tokens: 200,
-    // randomize 1.5 2.0
-    frequency_penalty: Math.random() * (2.0 - 1.5) + 1.5,
-    // randomize 1.0 1.5
-    presence_penalty: Math.random() * (1.5 - 1.0) + 1.0,
-    n: 1,
-    stop: ['||'],
-  } as CreateCompletionRequest
+  private models = {
+    'text-davinci-003': 'davinci',
+    'text-davinci-002': 'davinci',
+  }
+
+  private temperatures = {
+    'text-davinci-003': [0.7, 0.8, 0.9, 1.0],
+    'text-davinci-002': [0.7, 0.8, 0.9, 1.0],
+  }
+
+  private frequencies = {
+    'text-davinci-003': [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    'text-davinci-002': [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+  }
+
+  private presences = {
+    'text-davinci-003': [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    'text-davinci-002': [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+  }
+
+  private n = {
+    'text-davinci-003': [1],
+    'text-davinci-002': [1, 2],
+  }
+
+  private GetRandomCompletionRequest() {
+    const model = Object.keys(this.models)[
+      Math.floor(Math.random() * Object.keys(this.models).length)
+    ]
+
+    const temperature =
+      // @ts-ignore
+      this.temperatures[model][Math.floor(Math.random() * this.temperatures[model].length)]
+    const frequency =
+      // @ts-ignore
+      this.frequencies[model][Math.floor(Math.random() * this.frequencies[model].length)]
+    // @ts-ignore
+    const presence = this.presences[model][Math.floor(Math.random() * this.presences[model].length)]
+    // @ts-ignore
+    const n = this.n[model][Math.floor(Math.random() * this.n[model].length)]
+
+    return {
+      model,
+      temperature,
+      frequency_penalty: frequency,
+      presence_penalty: presence,
+      n,
+    } as CreateCompletionRequest
+  }
 
   public async complete(text: string, username: string) {
     const temp_main = fs.readFileSync(process.cwd() + '/tmp/main.gpt.txt', 'utf8')
@@ -51,9 +89,9 @@ class OpenAI extends OpenAIApi {
       `context: ${JSON.stringify(StringUtils.InfoText(main + history + text))}`,
       'ai.complete'
     )
-    Logger.info(`CONFIG: ${JSON.stringify(this.RandonCompletionRequest)}`, 'ai.complete')
+    Logger.info(`CONFIG: ${JSON.stringify(this.GetRandomCompletionRequest())}`, 'ai.complete')
 
-    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Suely(${username}):||`)
+    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Winx(${username}):||`)
 
     if (StringUtils.CountTokens(prompt) > 4096) {
       Logger.error('tokens limit exceeded!', 'ai.complete')
@@ -64,7 +102,7 @@ class OpenAI extends OpenAIApi {
       return this.createCompletion(
         {
           prompt,
-          ...this.RandonCompletionRequest,
+          ...this.GetRandomCompletionRequest(),
           stop: ['||'],
         },
         { timeout: 30000 }
@@ -74,7 +112,7 @@ class OpenAI extends OpenAIApi {
     return this.createCompletion(
       {
         prompt,
-        ...this.RandonCompletionRequest,
+        ...this.GetRandomCompletionRequest(),
         stop: ['||'],
       },
       { timeout: 30000 }
@@ -86,9 +124,9 @@ class OpenAI extends OpenAIApi {
     const history = fs.readFileSync(process.cwd() + '/tmp/history.gpt.txt', 'utf8')
 
     Logger.info(`CONTEXT: ${JSON.stringify(StringUtils.InfoText(main + history))}`, 'IA/COMPLETE')
-    Logger.info(`CONFIG: ${JSON.stringify(this.RandonCompletionRequest)}`, 'IA/COMPLETE')
+    Logger.info(`CONFIG: ${JSON.stringify(this.GetRandomCompletionRequest())}`, 'IA/COMPLETE')
 
-    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Suely:||`)
+    const prompt = StringUtils.RemoveBreakLines(main + history + text + `Winx:||`)
 
     if (StringUtils.CountTokens(prompt) > 4000) {
       Logger.error('Tokens limit exceeded!', 'IA/COMPLETE')
@@ -98,14 +136,14 @@ class OpenAI extends OpenAIApi {
       // text-curie-001 text-davinci-003
       return this.createCompletion({
         prompt,
-        ...this.RandonCompletionRequest,
+        ...this.GetRandomCompletionRequest(),
         stop: ['||'],
       })
     }
 
     return this.createCompletion({
       prompt,
-      ...this.RandonCompletionRequest,
+      ...this.GetRandomCompletionRequest(),
       stop: ['||'],
     })
   }
@@ -160,7 +198,7 @@ class OpenAI extends OpenAIApi {
 
       return {
         role:
-          user.includes('suely') && !user.includes('(')
+          user.includes('Winx') && !user.includes('(')
             ? ChatCompletionRequestMessageRoleEnum.Assistant
             : ChatCompletionRequestMessageRoleEnum.User,
         name: new_user ? new_user : user,
@@ -179,7 +217,7 @@ class OpenAI extends OpenAIApi {
 
     const messages_text = {
       role:
-        user.includes('suely') && !user.includes('(')
+        user.includes('Winx') && !user.includes('(')
           ? ChatCompletionRequestMessageRoleEnum.Assistant
           : ChatCompletionRequestMessageRoleEnum.User,
       name: new_user ? new_user : user,
